@@ -62,7 +62,7 @@ def combine_screenshot_tiles(screenshot_tiles: list[bytes]) -> bytes:
 
         # Validate that all opened objects are proper PIL images
         for img in images:
-            if not Image.isImageType(img):
+            if not isinstance(img, Image.Image):
                 raise ValueError("Tile is not a valid PIL Image object")
 
         # Calculate total dimensions
