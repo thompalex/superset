@@ -33,8 +33,9 @@ jobs:
         with:
           ref: ${{ inputs.ref || github.ref_name }}
           persist-credentials: true
-          submodules: recursive
           fetch-depth: 0
+      - name: Init required submodules
+        run: git submodule update --init .github/actions/chart-releaser-action
 
       - name: Configure Git
         run: |
