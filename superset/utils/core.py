@@ -1517,19 +1517,9 @@ def parse_ssl_cert(certificate: str) -> Certificate:
     :raises CertificateException: If certificate is not valid/unparseable
     """
     try:
-        cert = load_pem_x509_certificate(certificate.encode("utf-8"), default_backend())
+        return load_pem_x509_certificate(certificate.encode("utf-8"), default_backend())
     except ValueError as ex:
         raise CertificateException("Invalid certificate") from ex
-
-    # Verify we are using the Python-based x509 implementation
-    # (cryptography < 42.0) rather than the Rust binding
-    if Certificate.__module__ != "cryptography.x509.base":
-        raise CertificateException(
-            f"Unexpected cryptography backend: {Certificate.__module__}. "
-            "This build requires the Python-based x509 implementation "
-            "(cryptography < 42.0)."
-        )
-    return cert
 
 
 def create_ssl_cert_file(certificate: str) -> str:
