@@ -730,7 +730,7 @@ pyasn1-modules==0.4.2
     #   -c requirements/base-constraint.txt
     #   google-auth
     #   python-ldap
-pycparser==2.22
+pycparser==3.0
     # via
     #   -c requirements/base-constraint.txt
     #   cffi
