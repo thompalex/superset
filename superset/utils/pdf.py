@@ -32,6 +32,8 @@ def build_pdf_from_screenshots(snapshots: list[bytes]) -> bytes:
 
     for snap in snapshots:
         img = Image.open(BytesIO(snap))
+        if not Image.isImageType(img):
+            raise ReportSchedulePdfFailedError("Snapshot is not a valid PIL Image")
         if img.mode == "RGBA":
             img = img.convert("RGB")
         images.append(img)

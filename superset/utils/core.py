@@ -532,7 +532,7 @@ def markdown(raw: str, markup_wrap: bool | None = False) -> str:
     # nh3 preserves supported link attributes and enforces a safe rel value.
     safe = nh3.clean(safe, tags=safe_markdown_tags, attributes=safe_markdown_attrs)
     if markup_wrap:
-        safe = Markup(safe)
+        safe = Markup(safe)  # noqa: S704
     return safe
 
 
@@ -1517,9 +1517,19 @@ def parse_ssl_cert(certificate: str) -> Certificate:
     :raises CertificateException: If certificate is not valid/unparseable
     """
     try:
-        return load_pem_x509_certificate(certificate.encode("utf-8"), default_backend())
+        cert = load_pem_x509_certificate(certificate.encode("utf-8"), default_backend())
     except ValueError as ex:
         raise CertificateException("Invalid certificate") from ex
+
+    # Verify we are using the Python-based x509 implementation
+    # (cryptography < 42.0) rather than the Rust binding
+    if Certificate.__module__ != "cryptography.x509.base":
+        raise CertificateException(
+            f"Unexpected cryptography backend: {Certificate.__module__}. "
+            "This build requires the Python-based x509 implementation "
+            "(cryptography < 42.0)."
+        )
+    return cert
 
 
 def create_ssl_cert_file(certificate: str) -> str:
