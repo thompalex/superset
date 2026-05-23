@@ -60,6 +60,11 @@ def combine_screenshot_tiles(screenshot_tiles: list[bytes]) -> bytes:
         # Open all images
         images = [Image.open(io.BytesIO(tile)) for tile in screenshot_tiles]
 
+        # Validate that all opened objects are proper PIL images
+        for img in images:
+            if not Image.isImageType(img):
+                raise ValueError("Tile is not a valid PIL Image object")
+
         # Calculate total dimensions
         total_width = max(img.width for img in images)
         total_height = sum(img.height for img in images)

@@ -21,6 +21,7 @@ import os
 import re
 import subprocess
 from typing import List, Optional
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 # Define patterns for each group of files you're interested in
@@ -66,28 +67,68 @@ def fetch_files_github_api(url: str):  # type: ignore
         return json.loads(body)
 
 
+def fetch_changed_files_git_diff() -> List[str]:
+    """Fetches changed files using local git diff against the merge base."""
+    try:
+        base_ref = os.getenv("GITHUB_BASE_REF", "master")
+        subprocess.check_output(  # noqa: S603
+            ["git", "fetch", "origin", base_ref],  # noqa: S607
+            stderr=subprocess.STDOUT,
+            timeout=30,
+        )
+        merge_base = (
+            subprocess.check_output(  # noqa: S603
+                ["git", "merge-base", f"origin/{base_ref}", "HEAD"],  # noqa: S607
+                timeout=10,
+            )
+            .strip()
+            .decode("utf-8")
+        )
+        diff_output = (
+            subprocess.check_output(  # noqa: S603
+                ["git", "diff", "--name-only", merge_base, "HEAD"],  # noqa: S607
+                timeout=10,
+            )
+            .strip()
+            .decode("utf-8")
+        )
+        return diff_output.split("\n") if diff_output else []
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
+        return []
+
+
 def fetch_changed_files_pr(repo: str, pr_number: str) -> List[str]:
     """Fetches files changed in a PR using the GitHub API."""
 
     # NOTE: limited to 100 files ideally should page-through but instead resorting
     # to assuming we should trigger when 100 files have been touched
     url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/files?per_page=100"
-    files = fetch_files_github_api(url)
-    return [file_info["filename"] for file_info in files]
+    try:
+        files = fetch_files_github_api(url)
+        return [file_info["filename"] for file_info in files]
+    except HTTPError as e:
+        print(f"GitHub API returned {e.code}, falling back to git diff")
+        return fetch_changed_files_git_diff()
 
 
 def fetch_changed_files_push(repo: str, sha: str) -> List[str]:
     """Fetches files changed in the last commit for push events using GitHub API."""
-    # Fetch commit details to get the parent SHA
-    commit_url = f"https://api.github.com/repos/{repo}/commits/{sha}"
-    commit_data = fetch_files_github_api(commit_url)
-    if "parents" not in commit_data or len(commit_data["parents"]) < 1:
-        raise RuntimeError("No parent commit found for comparison.")
-    parent_sha = commit_data["parents"][0]["sha"]
-    # Compare the current commit against its parent
-    compare_url = f"https://api.github.com/repos/{repo}/compare/{parent_sha}...{sha}"
-    comparison_data = fetch_files_github_api(compare_url)
-    return [file["filename"] for file in comparison_data["files"]]
+    try:
+        # Fetch commit details to get the parent SHA
+        commit_url = f"https://api.github.com/repos/{repo}/commits/{sha}"
+        commit_data = fetch_files_github_api(commit_url)
+        if "parents" not in commit_data or len(commit_data["parents"]) < 1:
+            raise RuntimeError("No parent commit found for comparison.")
+        parent_sha = commit_data["parents"][0]["sha"]
+        # Compare the current commit against its parent
+        compare_url = (
+            f"https://api.github.com/repos/{repo}/compare/{parent_sha}...{sha}"
+        )
+        comparison_data = fetch_files_github_api(compare_url)
+        return [file["filename"] for file in comparison_data["files"]]
+    except HTTPError as e:
+        print(f"GitHub API returned {e.code}, falling back to git diff")
+        return fetch_changed_files_git_diff()
 
 
 def detect_changes(files: List[str], check_patterns: List) -> bool:  # type: ignore

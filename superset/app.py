@@ -49,6 +49,10 @@ def create_app(
     superset_config_module: Optional[str] = None,
     superset_app_root: Optional[str] = None,
 ) -> Flask:
+    from superset.utils.dependency_validation import validate_dependency_versions
+
+    validate_dependency_versions()
+
     app = SupersetApp(__name__)
 
     try:
