@@ -1521,8 +1521,6 @@ def parse_ssl_cert(certificate: str) -> Certificate:
     except ValueError as ex:
         raise CertificateException("Invalid certificate") from ex
 
-    return cert
-
 
 def create_ssl_cert_file(certificate: str) -> str:
     """
