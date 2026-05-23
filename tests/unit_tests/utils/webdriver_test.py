@@ -521,7 +521,7 @@ class TestWebDriverPlaywrightFallback:
         mock_playwright_instance.chromium.launch.return_value = mock_browser
         mock_browser.new_context.return_value = mock_context
         mock_context.new_page.return_value = mock_page
-        mock_page.goto.side_effect = PlaywrightTimeout()
+        mock_page.goto.side_effect = PlaywrightTimeout("Timeout 30000ms exceeded.")
 
         with patch("superset.utils.webdriver.app") as mock_app:
             mock_app.config = {
