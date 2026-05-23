@@ -28,8 +28,8 @@ logger = logging.getLogger(__name__)
 # Expected version ranges for pinned dependencies
 PINNED_DEPS: dict[str, tuple[str, str]] = {
     "cryptography": ("46.0.6", "47.0.0"),
-    "Pillow": ("10.3.0", "13.0.0"),
-    "Jinja2": ("3.1.4", "3.2.0"),
+    "Pillow": ("12.2.0", "13.0.0"),
+    "Jinja2": ("3.1.6", "3.2.0"),
 }
 
 
