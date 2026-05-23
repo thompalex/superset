@@ -452,7 +452,7 @@ itsdangerous==2.2.0
     #   flask-wtf
 jaraco-classes==3.4.0
     # via keyring
-jaraco-context>=6.1.0
+jaraco-context==6.1.2
     # via keyring
 jaraco-functools==4.3.0
     # via keyring
