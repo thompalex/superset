@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 PINNED_DEPS: dict[str, tuple[str, str]] = {
     "cryptography": ("41.0.0", "42.0.0"),
     "Pillow": ("10.2.0", "11.0.0"),
-    "Jinja2": ("3.1.3", "3.1.4"),
+    "Jinja2": ("3.1.6", "3.2.0"),
 }
 
 
