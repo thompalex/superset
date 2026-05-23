@@ -74,10 +74,12 @@ def fetch_changed_files_git_diff() -> List[str]:
         subprocess.check_output(  # noqa: S603
             ["git", "fetch", "origin", base_ref],  # noqa: S607
             stderr=subprocess.STDOUT,
+            timeout=30,
         )
         merge_base = (
             subprocess.check_output(  # noqa: S603
                 ["git", "merge-base", f"origin/{base_ref}", "HEAD"],  # noqa: S607
+                timeout=10,
             )
             .strip()
             .decode("utf-8")
@@ -85,12 +87,13 @@ def fetch_changed_files_git_diff() -> List[str]:
         diff_output = (
             subprocess.check_output(  # noqa: S603
                 ["git", "diff", "--name-only", merge_base, "HEAD"],  # noqa: S607
+                timeout=10,
             )
             .strip()
             .decode("utf-8")
         )
         return diff_output.split("\n") if diff_output else []
-    except subprocess.CalledProcessError:
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired):
         return []
 
 
