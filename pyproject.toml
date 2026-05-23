@@ -464,6 +464,7 @@ authorized_licenses = [
     "simplified bsd",
     "the unlicense (unlicense)",
     "the unlicense",
+    "historical permission notice and disclaimer (hpnd)",
 ]
 [tool.liccheck.authorized_packages]
 # --------------------------------------------------------------
